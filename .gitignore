@@ -8,3 +8,8 @@ build/
 .venv/
 *.arrow
 logs/
+CONTEXT.md
+.gradio/
+dist/
+build/
+*.egg-info

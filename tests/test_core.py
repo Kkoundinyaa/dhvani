@@ -1,7 +1,7 @@
 """Tests for dhwani core functionality."""
 
 import pytest
-from dhwani.core import normalize, to_ipa, to_devanagari, are_same, identify_languages
+from dhvani.core import normalize, to_ipa, to_devanagari, are_same, identify_languages
 
 
 class TestAreSame:

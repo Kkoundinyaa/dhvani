@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dhwani"
-version = "0.1.0"
-description = "Phonetic normalization toolkit for Hinglish (Romanized Hindi + English code-mixed text)"
+name = "dhvani"
+version = "0.2.1"
+description = "Phonetic normalization for Hinglish text. Resolves spelling variation in Romanized Hindi using IPA as a bridge representation."
 readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.9"
@@ -14,13 +14,19 @@ authors = [
 ]
 keywords = ["hinglish", "hindi", "ipa", "phonetics", "transliteration", "nlp", "normalization"]
 classifiers = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Text Processing :: Linguistic",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Natural Language :: Hindi",
+    "Natural Language :: English",
 ]
 
 dependencies = [
@@ -34,14 +40,18 @@ dev = ["pytest", "pytest-cov", "ruff"]
 demo = ["gradio>=4.0"]
 
 [project.scripts]
-dhwani = "dhwani.cli:main"
+dhvani = "dhvani.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/Kkoundinyaa/dhwani"
 Repository = "https://github.com/Kkoundinyaa/dhwani"
+Issues = "https://github.com/Kkoundinyaa/dhwani/issues"
 
 [tool.setuptools.packages.find]
-include = ["dhwani*"]
+include = ["dhvani*"]
+
+[tool.setuptools.package-data]
+"dhvani.lexicon" = ["*.json"]
 
 [tool.ruff]
 line-length = 100

@@ -1,0 +1,16 @@
+{
+  "dataset": "cardiffnlp/tweet_sentiment_multilingual (hindi)",
+  "test_size": 870,
+  "without_normalization": {
+    "accuracy": 0.4114942528735632,
+    "macro_f1": 0.34590302542450296
+  },
+  "with_normalization": {
+    "accuracy": 0.41954022988505746,
+    "macro_f1": 0.357488285615017
+  },
+  "improvement": {
+    "accuracy_points": 0.8045977011494232,
+    "f1_points": 1.1585260190514035
+  }
+}
