@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dhvani"
-version = "0.2.1"
+version = "0.2.2"
 description = "Phonetic normalization for Hinglish text. Resolves spelling variation in Romanized Hindi using IPA as a bridge representation."
 readme = "README.md"
 license = {text = "MIT"}
