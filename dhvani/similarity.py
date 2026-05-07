@@ -40,6 +40,17 @@ def _get_canonical_ipa(word: str) -> str:
     else:
         # Normalize social media elongation before IPA conversion
         word = collapse_repeated(word.lower())
+        # Try corrector first (handles abbreviations like bsdk, bc, jbrdst)
+        # If it resolves to Devanagari, get IPA from that instead of raw G2P
+        from dhvani.corrector import _direct_lookup
+        dev = _direct_lookup(word)
+        if dev:
+            dev_ipa_map = _get_devanagari_ipa_map()
+            ipa = dev_ipa_map.get(dev)
+            if ipa:
+                return ipa_to_canonical(ipa)
+            ipa = devanagari_to_ipa(dev)
+            return ipa_to_canonical(ipa)
         ipa = romanized_hindi_to_ipa(word)
     return ipa_to_canonical(ipa)
 

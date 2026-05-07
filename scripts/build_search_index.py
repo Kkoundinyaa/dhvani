@@ -50,10 +50,11 @@ def build_index():
     print("Loading cardiffnlp/tweet_sentiment_multilingual hindi splits...", flush=True)
     ds_train = load_dataset("cardiffnlp/tweet_sentiment_multilingual", "hindi", split="train")
     ds_test = load_dataset("cardiffnlp/tweet_sentiment_multilingual", "hindi", split="test")
+    ds_val = load_dataset("cardiffnlp/tweet_sentiment_multilingual", "hindi", split="validation")
 
-    # Combine
-    all_texts = list(ds_train["text"]) + list(ds_test["text"])
-    all_labels = list(ds_train["label"]) + list(ds_test["label"])
+    # Combine all splits
+    all_texts = list(ds_train["text"]) + list(ds_test["text"]) + list(ds_val["text"])
+    all_labels = list(ds_train["label"]) + list(ds_test["label"]) + list(ds_val["label"])
     print(f"Loaded {len(all_texts)} tweets total.", flush=True)
 
     corpus = []  # list of {text, cleaned, devanagari, sentiment}

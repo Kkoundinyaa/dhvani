@@ -319,6 +319,70 @@ def _direct_lookup(roman: str) -> Optional[str]:
         "harami": "हरामी", "gadha": "गधा", "ullu": "उल्लू",
         "gaandu": "गांडू", "gandu": "गांडू",
         "chal": "चल", "nikal": "निकल", "hatt": "हट",
+        # Abbreviations / acronyms (not phonetic, need explicit mapping)
+        "bsdk": "बोसड़ीके", "bsdke": "बोसड़ीके", "bosdike": "बोसड़ीके",
+        "bosdk": "बोसड़ीके", "bosdke": "बोसड़ीके", "bosdiwale": "बोसड़ीवाले",
+        "bc": "बहनचोद", "behenchod": "बहनचोद", "bhnchod": "बहनचोद",
+        "bhenchod": "बहनचोद", "benchod": "बहनचोद",
+        "mc": "मादरचोद", "madarchod": "मादरचोद", "mdrchod": "मादरचोद",
+        "bkl": "बकलोल", "bakl": "बकलोल",
+        "chtyia": "चूतिया", "chtiya": "चूतिया", "chutya": "चूतिया",
+        "gdha": "गधा", "gdhe": "गधे",
+        "hmkhor": "हरामखोर", "haramkhor": "हरामखोर",
+        "bevkoof": "बेवकूफ", "bevkuf": "बेवकूफ", "bwkoof": "बेवकूफ",
+        "bewkoof": "बेवकूफ",
+        # Vowel-dropped common words
+        "jbrdst": "जबरदस्त", "jabrdst": "जबरदस्त", "jabardast": "जबरदस्त",
+        "zbrdst": "ज़बरदस्त", "zabrdst": "ज़बरदस्त", "zabardast": "ज़बरदस्त",
+        "shndaar": "शानदार", "shndar": "शानदार", "shaandaar": "शानदार",
+        "shandar": "शानदार",
+        "kmaal": "कमाल", "kmal": "कमाल", "kamaal": "कमाल",
+        "ghtiya": "घटिया", "ghatya": "घटिया",
+        "bkwas": "बकवास", "bkwaas": "बकवास", "bakwaas": "बकवास",
+        "lajwab": "लाजवाब", "ljwab": "लाजवाब", "lajawab": "लाजवाब",
+        "dhmakedar": "धमाकेदार", "dhamakedar": "धमाकेदार",
+        "mzedaar": "मज़ेदार", "mazedaar": "मज़ेदार", "mzedar": "मज़ेदार",
+        "khraab": "खराब", "khrab": "खराब", "kharab": "खराब",
+        "barbaad": "बर्बाद", "brbad": "बर्बाद", "barbad": "बर्बाद",
+        "bekaar": "बेकार", "bkar": "बेकार", "bekar": "बेकार",
+        "faltu": "फालतू", "fltu": "फालतू", "faaltu": "फालतू",
+        "wahiyat": "वाहियात", "wahyat": "वाहियात", "whyat": "वाहियात",
+        "pagal": "पागल", "pgl": "पागल", "pagl": "पागल",
+        "pyaar": "प्यार", "pyar": "प्यार", "pyr": "प्यार",
+        "khush": "खुश", "khsh": "खुश", "kush": "खुश",
+        "dhmkdar": "धमाकेदार",
+        "mza": "मज़ा", "mzaa": "मज़ा", "mazaa": "मज़ा", "maza": "मज़ा",
+        # Gendered abbreviations (Hindi adjectives/verbs agree with noun gender)
+        # accha/acchi/acche (good - m/f/m-pl)
+        "ccha": "अच्छा", "cchi": "अच्छी", "cche": "अच्छे",
+        "acha": "अच्छा", "achi": "अच्छी", "ache": "अच्छे",
+        # bura/buri/bure (bad - m/f/m-pl)
+        "bri": "बुरी", "bre": "बुरे",
+        # ganda/gandi/gande (dirty/bad - m/f/m-pl)
+        "gndi": "गंदी", "gnda": "गंदा", "gnde": "गंदे",
+        "ganda": "गंदा", "gandi": "गंदी", "gande": "गंदे",
+        # kara/kari/kare (did - m/f/m-pl causative)
+        "kra": "करा", "kri": "करी", "kre": "करे",
+        # chota/choti/chote (small - m/f/m-pl)
+        "chti": "छोटी", "chta": "छोटा", "chte": "छोटे",
+        # mota/moti (fat - m/f)
+        "mti": "मोटी", "mta": "मोटा",
+        # lamba/lambi (tall - m/f)
+        "lmbi": "लंबी", "lmba": "लंबा",
+        # khubsurat (beautiful - invariant, but common misspellings)
+        "khubsurat": "खूबसूरत", "khbsurat": "खूबसूरत", "khubsurt": "खूबसूरत",
+        # sundar (beautiful - m/f same)
+        "sundar": "सुंदर", "sndar": "सुंदर", "sundr": "सुंदर",
+        # purana/purani (old - m/f)
+        "prani": "पुरानी", "prana": "पुराना", "purani": "पुरानी",
+        # naya/nayi (new - m/f)
+        "nyi": "नयी", "nya": "नया", "nayi": "नयी", "naya": "नया",
+        # saccha/sacchi (true/real - m/f)
+        "sccha": "सच्चा", "scchi": "सच्ची",
+        "saccha": "सच्चा", "sacchi": "सच्ची",
+        # acha with doubled ch variants people commonly type
+        "achha": "अच्छा", "achhi": "अच्छी", "achhe": "अच्छे",
+        "achchha": "अच्छा", "achchhi": "अच्छी",
     }
 
     builtin = _VARIANT_TO_CANONICAL.get(word)
