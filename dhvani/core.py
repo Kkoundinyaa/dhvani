@@ -147,3 +147,40 @@ def identify_languages(text: str) -> List[Tuple[str, str]]:
         cleaned.append(clean)
     tags = word_level_lang_id(cleaned)
     return list(zip(words, tags))
+
+
+def batch_normalize(texts: List[str], target: str = "roman") -> List[str]:
+    """Normalize a list of Hinglish texts to a canonical form.
+
+    Args:
+        texts: List of input Hinglish texts
+        target: Output format - "roman", "devanagari", or "ipa"
+
+    Returns:
+        List of normalized texts in the target representation
+    """
+    return [normalize(text, target=target) for text in texts]
+
+
+def batch_to_devanagari(texts: List[str]) -> List[str]:
+    """Convert a list of Hinglish texts to Devanagari.
+
+    Args:
+        texts: List of input Hinglish texts
+
+    Returns:
+        List of texts with Hindi words converted to Devanagari
+    """
+    return [to_devanagari(text) for text in texts]
+
+
+def batch_to_ipa(texts: List[str]) -> List[str]:
+    """Convert a list of Hinglish texts to IPA representation.
+
+    Args:
+        texts: List of input Hinglish texts
+
+    Returns:
+        List of texts in IPA representation
+    """
+    return [to_ipa(text) for text in texts]

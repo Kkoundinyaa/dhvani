@@ -165,17 +165,7 @@ def _collapse_doubles(word: str) -> str:
     return ''.join(result)
 
 
-def _direct_lookup(roman: str) -> Optional[str]:
-    """Direct lookup of romanized word in canonical dictionary.
-
-    Checks built-in high-priority map FIRST (hand-verified, correct for
-    common Hinglish), then falls back to HPC-generated map.
-    If not found, tries collapsing double consonants (e.g., "yarr" -> "yar").
-    """
-    word = roman.lower().strip()
-
-    # Built-in takes priority (hand-verified, handles ambiguous words correctly)
-    _VARIANT_TO_CANONICAL = {
+_VARIANT_TO_CANONICAL = {
         "bohot": "बहुत", "boht": "बहुत", "bhot": "बहुत", "bahot": "बहुत",
         "bahut": "बहुत",
         "accha": "अच्छा", "achha": "अच्छा", "acha": "अच्छा", "achaa": "अच्छा",
@@ -383,7 +373,71 @@ def _direct_lookup(roman: str) -> Optional[str]:
         # acha with doubled ch variants people commonly type
         "achha": "अच्छा", "achhi": "अच्छी", "achhe": "अच्छे",
         "achchha": "अच्छा", "achchhi": "अच्छी",
-    }
+        # Additional abusive word variants for content moderation coverage
+        "chutiye": "चूतिया", "chutiyapa": "चूतियापा", "chutiyo": "चूतिया",
+        "chootiya": "चूतिया", "chootia": "चूतिया", "chutyia": "चूतिया",
+        "bahinchod": "बहनचोद", "behanchod": "बहनचोद",
+        "bhenchd": "बहनचोद", "bhnchd": "बहनचोद",
+        "mderchod": "मादरचोद", "madrchod": "मादरचोद",
+        "madarchd": "मादरचोद", "mdrchd": "मादरचोद", "maadarchod": "मादरचोद",
+        "bosadike": "बोसड़ीके", "bhosdike": "बोसड़ीके",
+        "bhosdiwale": "बोसड़ीके", "bhsdk": "बोसड़ीके", "bhosdke": "बोसड़ीके",
+        "bsdwale": "बोसड़ीके",
+        "gndu": "गांडू", "ganduu": "गांडू",
+        "gaand": "गांड", "gand": "गांड",
+        "saaley": "साले", "sali": "साली", "saaliyan": "साली",
+        "kameena": "कमीना", "kmina": "कमीना", "kameene": "कमीने",
+        "kamine": "कमीने", "kameeni": "कमीनी", "kamino": "कमीने", "kmeena": "कमीना",
+        "hrami": "हरामी", "haraami": "हरामी", "haraamee": "हरामी",
+        "haraamkhor": "हरामखोर", "hramkhor": "हरामखोर",
+        "gdhe": "गधे", "gadhaa": "गधा", "gadho": "गधे",
+        "ulloo": "उल्लू", "ulu": "उल्लू", "ulluu": "उल्लू",
+        "bevakuf": "बेवकूफ", "bewaqoof": "बेवकूफ",
+        "bvkoof": "बेवकूफ", "bewkuf": "बेवकूफ", "bevkf": "बेवकूफ",
+        "pagla": "पागल", "paglu": "पागल", "paagal": "पागल", "pgal": "पागल",
+        "loduu": "लोडू", "laude": "लौड़े", "lavde": "लौड़े",
+        "lvde": "लौड़े", "laudu": "लोडू", "lwde": "लौड़े",
+        "bklol": "बकलोल", "baklole": "बकलोल", "bklnd": "बकलोल",
+        "kutte": "कुत्ते", "kute": "कुत्ते", "kuttey": "कुत्ते",
+        "kutta": "कुत्ता", "kuta": "कुत्ता",
+        "kutiya": "कुतिया", "kutia": "कुतिया", "kuttia": "कुतिया",
+        "suwar": "सूअर", "sooar": "सूअर", "soor": "सूअर",
+        "suwwar": "सूअर", "suar": "सूअर",
+        "tati": "टट्टी", "ttti": "टट्टी", "tattii": "टट्टी",
+        "tty": "टट्टी", "tatty": "टट्टी", "tatti": "टट्टी",
+        "ghatiyaa": "घटिया", "ghatiyo": "घटिया", "ghateya": "घटिया",
+        "bakvas": "बकवास", "bkvas": "बकवास", "bakwass": "बकवास",
+        "nalayak": "नालायक", "nalayq": "नालायक", "nalayk": "नालायक",
+        "nalaayak": "नालायक", "nlayak": "नालायक", "nlyak": "नालायक",
+        "bhadwa": "भड़वा", "bhadva": "भड़वा", "bhdwa": "भड़वा",
+        "bhadwe": "भड़वे", "bhdva": "भड़वा",
+        "rndi": "रंडी", "randee": "रंडी", "rndee": "रंडी",
+        "randi": "रंडी", "randiya": "रंडी", "randiyan": "रंडी",
+        "chamar": "चमार", "chamaar": "चमार", "chmaar": "चमार",
+        "chmar": "चमार",
+        "bhikhari": "भिखारी", "bhikari": "भिखारी", "bhkhari": "भिखारी",
+        "bhikhaari": "भिखारी", "bhkhri": "भिखारी",
+}
+
+# Build reverse index: Devanagari -> list of romanized variants
+_DEVANAGARI_TO_VARIANTS = {}
+for _roman, _dev in _VARIANT_TO_CANONICAL.items():
+    _DEVANAGARI_TO_VARIANTS.setdefault(_dev, []).append(_roman)
+
+
+def get_variants_for_devanagari(dev: str) -> list:
+    """Get all known romanized variants that map to a Devanagari word."""
+    return _DEVANAGARI_TO_VARIANTS.get(dev, [])
+
+
+def _direct_lookup(roman: str) -> Optional[str]:
+    """Direct lookup of romanized word in canonical dictionary.
+
+    Checks built-in high-priority map FIRST (hand-verified, correct for
+    common Hinglish), then falls back to HPC-generated map.
+    If not found, tries collapsing double consonants (e.g., "yarr" -> "yar").
+    """
+    word = roman.lower().strip()
 
     builtin = _VARIANT_TO_CANONICAL.get(word)
     if builtin:
