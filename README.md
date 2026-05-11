@@ -1,8 +1,10 @@
 # dhvani
 
-**Phonetic normalization for Hinglish text.**
+Phonetic normalization for Hinglish text.
 
-dhvani resolves the spelling chaos of Romanized Hindi. It knows that "bahut", "bohot", "boht", and "bhot" are all the same word, and normalizes them to a canonical form using IPA as a bridge representation.
+dhvani maps variant spellings of Romanized Hindi to canonical forms using IPA as a bridge. "bahut", "bohot", "boht", and "bhot" all produce the same IPA, so they all normalize to the same word.
+
+[Live Demo](https://krishnabadikela-dhvani.hf.space) | [PyPI](https://pypi.org/project/dhvani/) | v0.2.5
 
 ```python
 pip install dhvani
@@ -23,7 +25,7 @@ dhvani.to_ipa("kaise ho bhai")
 
 ---
 
-## The Problem
+## The problem
 
 600M+ Indians write online in Hinglish (Hindi in Latin script, mixed with English). There is no standardized spelling:
 
@@ -32,8 +34,9 @@ dhvani.to_ipa("kaise ho bhai")
 | बहुत (very) | bahut, bohot, boht, bhot, bahot, bht, bhaut |
 | अच्छा (good) | accha, achha, acha, achaa, aacha |
 | कैसे (how) | kaise, kese, kayse, kse |
+| बोसड़ीके | bosdike, bsdk, bosdk, bsdke, bhosdike |
 
-This breaks search, sentiment analysis, content moderation, and every other NLP tool. dhvani fixes it.
+Every NLP tool that does exact string matching on this text will miss things. dhvani fixes that by normalizing spelling before anything else runs.
 
 ---
 
@@ -43,7 +46,7 @@ This breaks search, sentiment analysis, content moderation, and every other NLP 
 pip install dhvani
 ```
 
-That's it. No model downloads, no API keys, no GPU needed. The 1M+ word lexicon ships with the package.
+The 1M+ word lexicon ships with the package. No model downloads, no API keys, no GPU.
 
 ---
 
@@ -54,26 +57,30 @@ That's it. No model downloads, no API keys, no GPU needed. The 1M+ word lexicon 
 ```python
 import dhvani
 
-# Handles messy social media text
+# Messy social media text
 dhvani.to_devanagari("kya karra h tu")
 # -> "क्या कर रहा है तू"
 
-# Handles elongated text
+# Elongated text
 dhvani.to_devanagari("bohotttt achaaa yaaaar")
 # -> "बहुत अच्छा यार"
 
-# Preserves English words and punctuation
+# Abbreviations and vowel-dropped forms
+dhvani.to_devanagari("bsdk kya kr rha hai")
+# -> "बोसड़ीके क्या कर रहा है"
+
+# English words and punctuation are left alone
 dhvani.to_devanagari("the movie was really acchi thi!")
 # -> "the movie was really अच्छी थी!"
 ```
 
-### Phonetic Matching
+### Phonetic matching
 
 ```python
 # Same word, different spellings
 dhvani.are_same("bahut", "bohot")     # True
 dhvani.are_same("theek", "tik")       # True
-dhvani.are_same("yaar", "yr")         # True
+dhvani.are_same("bsdk", "bosdike")    # True
 
 # Cross-script matching
 dhvani.are_same("bahut", "बहुत")      # True
@@ -83,7 +90,7 @@ dhvani.are_same("achaaaa", "अच्छा")   # True (handles elongation)
 dhvani.are_same("bahut", "accha")     # False
 ```
 
-### IPA Conversion
+### IPA conversion
 
 ```python
 dhvani.to_ipa("kaise ho bhai")
@@ -93,7 +100,7 @@ dhvani.to_ipa("bahut accha")
 # -> "bəɦʊt̪ ət͡ʃːʰaː"
 ```
 
-### Language Identification
+### Language identification
 
 ```python
 dhvani.identify_languages("the movie was really acchi thi")
@@ -106,6 +113,16 @@ dhvani.identify_languages("are you kidding me")
 
 dhvani.identify_languages("are bhai kya kar raha hai")
 # -> "are" tagged as Hindi (अरे)
+```
+
+### Batch processing
+
+```python
+dhvani.batch_to_devanagari(["bahut accha", "kya haal hai", "bohot maza aaya"])
+# -> ["बहुत अच्छा", "क्या हाल है", "बहुत मज़ा आया"]
+
+dhvani.batch_to_ipa(["bahut", "accha", "kaise"])
+# -> ["bəɦʊt̪", "ət͡ʃːʰaː", "kɛːseː"]
 ```
 
 ### CLI
@@ -123,9 +140,39 @@ dhvani same "bahut" "bohot"
 
 ---
 
-## How It Works
+## Content moderation
 
-All variant spellings of a Hindi word produce the same sound. dhvani uses IPA (International Phonetic Alphabet) as a universal bridge:
+This is where dhvani is most useful. People evade blocklists by misspelling abusive words, dropping vowels, or abbreviating ("bsdk", "chtiya", "bhnchod"). An exact match blocklist with 25 canonical spellings catches exactly those 25. dhvani normalizes all the creative misspellings to canonical Devanagari first, so a single Devanagari entry catches every variant.
+
+```python
+import dhvani
+
+# Exact match catches: 0 (none of these are in a typical blocklist)
+# dhvani catches: both
+text = "bsdk kya kr rha hai chtiya"
+normalized = dhvani.to_devanagari(text)
+# -> "बोसड़ीके क्या कर रहा है चूतिया"
+# Check normalized text against a Devanagari blocklist
+```
+
+One abusive word, many evasions:
+
+| Evasion | Exact match | dhvani |
+|---------|-------------|--------|
+| chutiya | Caught | Caught |
+| chtiya | Missed | Caught |
+| chtyia | Missed | Caught |
+| chutya | Missed | Caught |
+| chootiya | Missed | Caught |
+| chutiyo | Missed | Caught |
+
+The [live demo](https://krishnabadikela-dhvani.hf.space) has a Moderate tab where you can test this yourself. It tracks 24 abusive words with 192+ known spelling variants.
+
+---
+
+## How it works
+
+All variant spellings of a Hindi word produce the same sound. dhvani routes through IPA (International Phonetic Alphabet) to collapse them:
 
 ```
 "bahut"  ─┐
@@ -139,47 +186,73 @@ All variant spellings of a Hindi word produce the same sound. dhvani uses IPA (I
 
 | Tier | Method | Latency | When used |
 |------|--------|---------|-----------|
-| 1 | Lexicon lookup (1M+ entries) | <1ms | ~99% of words |
+| 0 | Corrector map (500+ hand-verified entries) | <1ms | Abbreviations, slang, vowel-dropped |
+| 1 | Lexicon lookup (1M+ entries) | <1ms | ~99% of standard words |
 | 2 | AI model (IndicXlit + epitran) | ~4s | Rare/novel words |
 | 3 | Rule-based G2P | <1ms | Fallback (no deps) |
 
-The lexicon was built from Hindi Wikipedia (50K articles), IITB parallel corpus (500K sentences), and MASSIVE/XNLI datasets, generating 10 romanized spelling variants per word via IPA-to-Roman rules.
+The lexicon was built from Hindi Wikipedia (50K articles), IITB parallel corpus (500K sentences), and MASSIVE/XNLI datasets. Each Devanagari word gets 10 romanized spelling variants generated via IPA-to-Roman rules.
 
-### Preprocessing Pipeline
+### Preprocessing
 
 Before lookup, input goes through:
-1. **Punctuation stripping** (preserved and reattached after conversion)
-2. **Repeated character collapsing** ("bohotttt" -> "bohot")
-3. **Double consonant fallback** (tries collapsed form if double misses)
-4. **Context-aware language ID** (disambiguates words like "are", "the", "bus")
+1. Punctuation stripping (preserved and reattached after)
+2. Repeated character collapsing ("bohotttt" -> "bohot")
+3. Double consonant fallback (tries collapsed form if double misses)
+4. Context-aware language ID (disambiguates words like "are", "the", "bus")
 
 ---
 
-## Use Cases
+## Use cases
 
-**Search & Retrieval** -- Index Hinglish content once, find it regardless of spelling. A search for "accha" finds posts containing "achha", "acha", "achaa".
+Content moderation: a 25-word Devanagari blocklist with dhvani preprocessing catches 192+ romanized variants that exact match misses.
 
-**Sentiment Analysis** -- Normalize text before classification. Spelling variants of sentiment words ("bakwas", "bakwaas", "bakwass") all resolve to the same form.
+Search: index Hinglish content once, find it regardless of spelling. Searching "accha" also finds "achha", "acha", "achaa".
 
-**Content Moderation** -- Detect abusive content regardless of spelling obfuscation.
+Sentiment analysis: spelling variants of sentiment words ("bakwas", "bakwaas", "bakwass") all resolve to the same form before the classifier sees them.
 
-**Preprocessing for LLMs** -- Reduce vocabulary size and improve tokenization for Hindi/Hinglish fine-tuning.
+LLM preprocessing: 11.9% vocabulary reduction measured on SentiMix (57K to 50K tokens) when normalizing before BPE tokenization.
+
+Chatbot input normalization: normalize incoming WhatsApp/chat messages before intent detection.
 
 ---
 
-## Performance
+## Live demo
 
-- 1,072,153 lexicon entries
-- <1ms per word (lexicon hit)
+[krishnabadikela-dhvani.hf.space](https://krishnabadikela-dhvani.hf.space)
+
+Six tabs: Normalize (live typing with Devanagari + IPA + language detection), Same Word? (compare two spellings), Moderate (exact match vs dhvani side by side), Explorer (type a word, see all known variants), Search (phonetic search over 3,033 real Hindi tweets), Sentiment (with/without normalization comparison).
+
+---
+
+## Numbers
+
+- 1,072,153 lexicon entries, 500+ hand-curated corrector entries
+- <1ms per word on lexicon hit
 - ~2s cold start (lexicon load), then instant
-- No model needed at inference (pure lookup + rules)
-- Tested on Cardiff Hindi Tweet Sentiment dataset: +1.2% macro F1 improvement over raw text
+- No model at inference, pure lookup + rules
+- 9.7MB package, pip install, zero config
+
+---
+
+## API reference
+
+| Function | Description |
+|----------|-------------|
+| `dhvani.to_devanagari(text)` | Convert Romanized Hindi to Devanagari |
+| `dhvani.to_ipa(text)` | Convert to IPA transcription |
+| `dhvani.are_same(word1, word2)` | Check if two words are phonetically equivalent |
+| `dhvani.identify_languages(text)` | Per-word language detection (hi/en/hi_dev) |
+| `dhvani.normalize(text, target)` | Normalize to "roman", "devanagari", or "ipa" |
+| `dhvani.batch_to_devanagari(texts)` | Batch convert list of texts |
+| `dhvani.batch_to_ipa(texts)` | Batch IPA conversion |
+| `dhvani.batch_normalize(texts)` | Batch normalization |
 
 ---
 
 ## Research
 
-Built on findings from IPA-GPT research at Ohio State University, which demonstrated that phonetic (IPA) representations enable significant cross-lingual transfer improvements for script-divergent languages like Hindi-Urdu.
+This grew out of IPA-GPT research at Ohio State University. That work showed IPA representations improve cross-lingual transfer for script-divergent language pairs like Hindi-Urdu by 15-25%. The spelling normalization problem in dhvani is the same underlying issue: same concept, different surface forms.
 
 ---
 
@@ -189,8 +262,7 @@ MIT
 
 ---
 
-## Links
-
-- **PyPI**: [dhvani](https://pypi.org/project/dhvani/)
-- **GitHub**: [Kkoundinyaa/dhwani](https://github.com/Kkoundinyaa/dhwani)
-- **Author**: Krishna Badikela, Ohio State University
+- [Live Demo](https://krishnabadikela-dhvani.hf.space)
+- [PyPI](https://pypi.org/project/dhvani/)
+- [GitHub](https://github.com/Kkoundinyaa/dhvani)
+- Author: Krishna Badikela, Ohio State University
