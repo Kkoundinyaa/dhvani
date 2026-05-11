@@ -351,6 +351,42 @@ _ABUSIVE_EXACT = {
 # Total: ~25 entries - a typical hand-built blocklist
 
 
+@app.route("/api/diff", methods=["POST"])
+def api_diff():
+    """Show word-by-word diff of what dhvani changes."""
+    text = request.json.get("text", "").strip()
+    if not text:
+        return jsonify({"error": "empty"}), 400
+
+    words = text.split()
+    langs = dhvani.identify_languages(text)
+    result_words = []
+    changed_count = 0
+
+    for word, (_, lang) in zip(words, langs):
+        dev = dhvani.to_devanagari(word)
+        ipa = dhvani.to_ipa(word)
+        is_changed = (lang in ("hi", "hi_dev")) and dev != word
+        if is_changed:
+            changed_count += 1
+        result_words.append({
+            "original": word,
+            "devanagari": dev,
+            "ipa": ipa,
+            "lang": lang,
+            "changed": is_changed,
+        })
+
+    return jsonify({
+        "input": text,
+        "words": result_words,
+        "total": len(words),
+        "changed": changed_count,
+        "full_devanagari": dhvani.to_devanagari(text),
+        "full_ipa": dhvani.to_ipa(text),
+    })
+
+
 @app.route("/api/moderate", methods=["POST"])
 def api_moderate():
     text = request.json.get("text", "").strip()

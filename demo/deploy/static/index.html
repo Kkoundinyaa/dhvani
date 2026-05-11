@@ -75,7 +75,7 @@ tailwind.config = {
     <nav class="flex gap-1" id="tabs">
       <button onclick="switchTab('normalize')" data-tab="normalize" class="tab-active px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Normalize</button>
       <button onclick="switchTab('compare')" data-tab="compare" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Same Word?</button>
-      <button onclick="switchTab('moderate')" data-tab="moderate" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Moderate</button>
+      <button onclick="switchTab('moderate')" data-tab="moderate" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Diff</button>
       <button onclick="switchTab('explorer')" data-tab="explorer" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Explorer</button>
       <button onclick="switchTab('search')" data-tab="search" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Search</button>
     </nav>
@@ -163,53 +163,33 @@ tailwind.config = {
     </div>
   </div>
 
-  <!-- ==================== MODERATE ==================== -->
+  <!-- ==================== DIFF ==================== -->
   <div id="panel-moderate" class="tab-panel hidden">
-    <div class="text-center mb-6">
-      <h2 class="text-2xl font-black text-slate-800 mb-2">Can you get past the filter?</h2>
-      <p class="text-slate-500 text-sm max-w-lg mx-auto">
-        Try to sneak abusive words past dhvani. Misspell them, drop vowels, use abbreviations.
-        A typical blocklist has 25 canonical spellings. dhvani normalizes everything to Devanagari first.
-      </p>
+    <p class="text-slate-500 text-sm mb-5">
+      See exactly what dhvani changes, word by word. Type messy Hinglish and see each word mapped to its canonical Devanagari form. Words that changed are highlighted.
+    </p>
+
+    <div class="relative mb-4">
+      <textarea id="mod-input" rows="2" placeholder="Type messy Hinglish: bohotttt achaaa kya karra h tu bhai"
+        class="w-full px-4 py-3 text-base rounded-xl border border-slate-200 bg-white resize-none focus:border-indigo-400 transition-all"
+        onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();doDiff()}"></textarea>
     </div>
+    <button onclick="doDiff()" class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200">
+      Show diff
+    </button>
 
-    <div id="mod-stats" class="flex justify-center mb-5"></div>
+    <div id="mod-output" class="mt-4"></div>
 
-    <div class="max-w-2xl mx-auto">
-      <div class="relative mb-4">
-        <textarea id="mod-input" rows="2" placeholder="Try: bsdk, chtiya, bhnchod, pgl, bvkoof, gndu..."
-          class="w-full px-4 py-3 text-base rounded-xl border border-slate-200 bg-white resize-none focus:border-red-400 transition-all"
-          onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();doModerate()}"></textarea>
-        <button onclick="doModerate()" class="absolute right-2 bottom-2 px-5 py-1.5 bg-red-600 text-white text-sm font-semibold rounded-lg hover:bg-red-700 transition-all">
-          Scan
-        </button>
+    <div class="mt-5">
+      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">Try these</p>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bohotttt achaaa movie thi yaaaar</button>
+        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">kya karra h tu aajkal bhai</button>
+        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bht bkwas flm thi yr</button>
+        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">shndaar performance dhmakedar match tha</button>
+        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">the movie was really good honestly</button>
       </div>
     </div>
-
-    <div id="mod-output" class="mt-2"></div>
-
-    <div class="mt-6">
-      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 text-center">Escalating difficulty</p>
-      <div class="flex flex-wrap gap-2 justify-center">
-        <button onclick="tryModerate(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-red-300 hover:text-red-600">
-          <span class="text-xs text-slate-400 mr-1">easy</span> chutiya pagal
-        </button>
-        <button onclick="tryModerate(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-red-300 hover:text-red-600">
-          <span class="text-xs text-slate-400 mr-1">medium</span> chtiya bvkoof pgl
-        </button>
-        <button onclick="tryModerate(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-red-300 hover:text-red-600">
-          <span class="text-xs text-slate-400 mr-1">hard</span> bsdk bhnchod gndu
-        </button>
-        <button onclick="tryModerate(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-red-300 hover:text-red-600">
-          <span class="text-xs text-slate-400 mr-1">mixed</span> kya bvkoof insaan hai ye chtiya pgl
-        </button>
-        <button onclick="tryModerate(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-red-300 hover:text-red-600">
-          <span class="text-xs text-emerald-500 mr-1">clean</span> bahut accha kaam kiya bhai
-        </button>
-      </div>
-    </div>
-
-    <div class="mt-8" id="mod-coverage"></div>
   </div>
 
   <!-- ==================== EXPLORER ==================== -->
@@ -480,149 +460,67 @@ function trySearch(q) {
   doSearch();
 }
 
-// ===== Content Moderation =====
-fetch('/api/moderation_stats').then(r => r.json()).then(d => {
-  document.getElementById('mod-stats').innerHTML = `
-    <div class="flex gap-3 flex-wrap justify-center">
-      <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full bg-red-50 text-red-600 border border-red-100">
-        ${d.total_words} abusive words tracked
-      </span>
-      <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full bg-amber-50 text-amber-600 border border-amber-100">
-        ${d.total_variants}+ spelling evasions
-      </span>
-      <span class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full bg-slate-100 text-slate-500 border border-slate-200">
-        25-word exact blocklist for comparison
-      </span>
-    </div>`;
-
-  const rows = d.words.map(w => `
-    <div class="flex items-start gap-3 p-3 bg-white rounded-xl border border-slate-200 card-hover">
-      <span class="flex-shrink-0 font-devanagari text-base font-semibold text-slate-800 w-24">${escapeHtml(w.devanagari)}</span>
-      <div class="min-w-0 flex-1">
-        <p class="text-xs text-slate-400 mb-1">${escapeHtml(w.meaning)} &middot; <span class="font-semibold text-red-500">${w.variant_count} evasions</span></p>
-        <div class="flex flex-wrap gap-1">
-          ${w.variants.map(v => `<span class="px-1.5 py-0.5 text-xs font-mono rounded bg-slate-100 text-slate-500">${escapeHtml(v)}</span>`).join('')}
-          ${w.variant_count > 8 ? `<span class="px-1.5 py-0.5 text-xs rounded bg-slate-50 text-slate-400">+${w.variant_count - 8} more</span>` : ''}
-        </div>
-      </div>
-    </div>`).join('');
-
-  document.getElementById('mod-coverage').innerHTML = `
-    <details class="group">
-      <summary class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5 cursor-pointer hover:text-slate-600 transition-colors">
-        Show all tracked words and evasions
-      </summary>
-      <div class="space-y-2 max-h-96 overflow-y-auto rounded-xl mt-2">${rows}</div>
-    </details>`;
-});
-
-function doModerate() {
+// ===== Diff =====
+function doDiff() {
   const text = document.getElementById('mod-input').value.trim();
   if (!text) return;
 
-  fetch('/api/moderate', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) })
+  fetch('/api/diff', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) })
     .then(r => r.json()).then(d => {
-      const exactCount = d.exact_match.count;
-      const dhvaniCount = d.dhvani.count;
-      const clean = dhvaniCount === 0 && exactCount === 0;
-      const totalWords = d.words_checked;
-
-      // Build flagged word set for highlighting
-      const flaggedWords = new Set(d.dhvani.flagged.map(f => f.word));
-      const exactWords = new Set(d.exact_match.flagged);
-
-      // Build highlighted text display
-      const inputWords = text.toLowerCase().replace(/[^\w\s]/g, ' ').split(/\s+/).filter(Boolean);
-      const highlightedHtml = inputWords.map(w => {
-        if (flaggedWords.has(w)) {
-          return `<span class="flagged-word font-semibold text-red-700">${escapeHtml(w)}</span>`;
+      // Word-by-word diff cards
+      const wordCards = d.words.map(w => {
+        if (!w.changed) {
+          // Unchanged word (English or already canonical)
+          return `<div class="inline-flex flex-col items-center px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-100">
+            <span class="text-sm text-slate-500">${escapeHtml(w.original)}</span>
+            <span class="text-[10px] text-slate-300 mt-0.5">${w.lang === 'en' ? 'en' : 'unchanged'}</span>
+          </div>`;
         }
-        return `<span class="safe-word text-slate-600">${escapeHtml(w)}</span>`;
-      }).join(' ');
+        // Changed word
+        return `<div class="inline-flex flex-col items-center px-2.5 py-2 rounded-lg bg-indigo-50 border border-indigo-200">
+          <span class="text-sm text-slate-400 line-through">${escapeHtml(w.original)}</span>
+          <span class="text-base font-devanagari font-semibold text-indigo-700">${escapeHtml(w.devanagari)}</span>
+          <span class="text-[10px] font-mono text-indigo-400">/${escapeHtml(w.ipa)}/</span>
+        </div>`;
+      }).join('');
 
-      let resultHtml = '';
-      if (clean) {
-        resultHtml = `
-          <div class="max-w-2xl mx-auto bg-white rounded-2xl border-2 border-emerald-300 p-6 fade-in text-center">
-            <p class="text-4xl mb-3">&#10003;</p>
-            <p class="text-lg font-bold text-emerald-700 mb-1">Clean</p>
-            <p class="text-sm text-slate-500 mb-4">No abusive content detected in ${totalWords} words</p>
-            <div class="inline-block bg-slate-50 rounded-xl px-5 py-3 border border-slate-100">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">Normalized</p>
-              <p class="text-sm font-devanagari text-slate-600">${escapeHtml(d.normalized)}</p>
-            </div>
-          </div>`;
-      } else {
-        // Build the per-word breakdown
-        const wordBreakdown = d.dhvani.flagged.map(f => {
-          const inExact = exactWords.has(f.word);
-          return `
-            <div class="flex items-center gap-3 p-2.5 rounded-lg ${inExact ? 'bg-slate-50' : 'bg-red-50'} border ${inExact ? 'border-slate-200' : 'border-red-200'}">
-              <span class="font-mono text-sm font-semibold text-red-700 min-w-[80px]">${escapeHtml(f.word)}</span>
-              <span class="text-slate-300">&rarr;</span>
-              <span class="font-devanagari text-sm font-semibold text-slate-800">${escapeHtml(f.devanagari)}</span>
-              <span class="text-xs text-slate-400 flex-1">${escapeHtml(f.meaning)}</span>
-              <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${inExact ? 'bg-slate-200 text-slate-500' : 'bg-red-100 text-red-600'}">
-                ${inExact ? 'both caught' : 'only dhvani'}
-              </span>
-            </div>`;
-        }).join('');
+      document.getElementById('mod-output').innerHTML = `
+        <div class="fade-in">
+          <!-- Stats -->
+          <div class="flex items-center gap-3 mb-4">
+            <span class="text-sm text-slate-500">${d.total} words</span>
+            <span class="text-slate-300">&middot;</span>
+            <span class="text-sm font-semibold ${d.changed > 0 ? 'text-indigo-600' : 'text-slate-400'}">${d.changed} normalized</span>
+            <span class="text-slate-300">&middot;</span>
+            <span class="text-sm text-slate-400">${d.total - d.changed} unchanged</span>
+          </div>
 
-        const missedCount = dhvaniCount - exactCount;
+          <!-- Word diff grid -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 glow-border">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-3">Word-by-word</p>
+            <div class="flex flex-wrap gap-2">${wordCards}</div>
+          </div>
 
-        resultHtml = `
-          <div class="max-w-2xl mx-auto fade-in">
-            <!-- Highlighted input -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 mb-4 glow-red">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-2">Input (flagged words highlighted)</p>
-              <p class="text-lg leading-relaxed">${highlightedHtml}</p>
-            </div>
-
-            <!-- Score -->
-            <div class="grid grid-cols-2 gap-3 mb-4">
-              <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-                <p class="text-3xl font-black ${exactCount > 0 ? 'text-amber-500' : 'text-slate-300'}">${exactCount}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">Exact match</p>
-                <p class="text-xs text-slate-400 mt-0.5">25-word blocklist</p>
-              </div>
-              <div class="bg-white rounded-xl border-2 border-red-300 p-4 text-center bg-red-50/30">
-                <p class="text-3xl font-black text-red-600">${dhvaniCount}</p>
-                <p class="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-1">dhvani</p>
-                <p class="text-xs text-slate-400 mt-0.5">normalize + same blocklist</p>
-              </div>
-            </div>
-
-            ${missedCount > 0 ? `
-            <div class="px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700 mb-4">
-              Exact match missed <span class="font-black">${missedCount}</span> word${missedCount > 1 ? 's' : ''}.
-              The ${missedCount > 1 ? 'spellings were' : 'spelling was'} not in the blocklist, but dhvani normalized ${missedCount > 1 ? 'them' : 'it'} to canonical Devanagari and caught ${missedCount > 1 ? 'them all' : 'it'}.
-            </div>` : ''}
-
-            <!-- Per-word breakdown -->
+          <!-- Full output -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div class="bg-white rounded-2xl border border-slate-200 p-5">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-3">Word-by-word breakdown</p>
-              <div class="space-y-2">${wordBreakdown}</div>
+              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">Devanagari</p>
+              <p class="text-base font-devanagari text-slate-700 leading-relaxed">${escapeHtml(d.full_devanagari)}</p>
             </div>
-
-            <!-- Normalized output -->
-            <div class="bg-white rounded-2xl border border-slate-200 p-5 mt-4">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">Full normalized output</p>
-              <p class="text-base font-devanagari text-slate-700 leading-relaxed">${escapeHtml(d.normalized)}</p>
+            <div class="bg-white rounded-2xl border border-slate-200 p-5">
+              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">IPA</p>
+              <p class="text-base font-mono text-indigo-500 leading-relaxed">/${escapeHtml(d.full_ipa)}/</p>
             </div>
+          </div>
 
-            ${codeBlock(`import dhvani\nnormalized = dhvani.to_devanagari("${text}")\n# Check each word against your Devanagari blocklist\n# dhvani handles the spelling chaos, you handle the policy`)}
-          </div>`;
-      }
-
-      document.getElementById('mod-output').innerHTML = resultHtml;
+          ${codeBlock(`import dhvani\ndhvani.to_devanagari("${text}")\n# "${d.full_devanagari}"`)}
+        </div>`;
     });
 }
 
-function tryModerate(btn) {
-  // Strip the difficulty label from the button text
-  const text = btn.textContent.replace(/^\s*(easy|medium|hard|mixed|clean)\s*/, '').trim();
-  document.getElementById('mod-input').value = text;
-  doModerate();
+function tryDiff(btn) {
+  document.getElementById('mod-input').value = btn.textContent;
+  doDiff();
 }
 
 // ===== Word Explorer =====

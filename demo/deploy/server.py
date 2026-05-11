@@ -135,6 +135,7 @@ def api_search():
     if not query_words:
         return jsonify({"results": [], "total": 0, "normalization": None})
 
+    # Always include normalization info for the query
     norm_info = {
         "devanagari": dhvani.to_devanagari(query),
         "ipa": dhvani.to_ipa(query),
@@ -145,8 +146,10 @@ def api_search():
 
     matched = set()
     for qw in query_words:
+        # Direct romanized match
         if qw in SEARCH_INDEX["romanized"]:
             matched.update(SEARCH_INDEX["romanized"][qw])
+        # Phonetic match via Devanagari normalization
         try:
             qw_dev = dhvani.to_devanagari(qw)
             if qw_dev and qw_dev in SEARCH_INDEX["devanagari"]:
@@ -195,142 +198,146 @@ def api_sentiment():
 
 # ===== Content Moderation =====
 
+# Abusive words: canonical Devanagari -> (English meaning, known romanized variants)
+# dhvani catches ALL variants via normalization; exact match only catches what's listed
 ABUSIVE_WORDS = {
-    "\u091a\u0942\u0924\u093f\u092f\u093e": {
+    "चूतिया": {
         "meaning": "idiot (vulgar)",
         "variants": ["chutiya", "chutia", "chtiya", "chtyia", "chutya", "chutyia",
                       "chootiya", "chootia", "chtia", "chutiye", "chutiyapa",
                       "chtiyo", "chutiyo", "chutiapa"],
     },
-    "\u092c\u0939\u0928\u091a\u094b\u0926": {
+    "बहनचोद": {
         "meaning": "sister-f***er",
         "variants": ["behenchod", "bhenchod", "benchod", "bhnchod", "bc",
                       "behen chod", "behanchod", "bhenchd", "bhnchd", "bahinchod"],
     },
-    "\u092e\u093e\u0926\u0930\u091a\u094b\u0926": {
+    "मादरचोद": {
         "meaning": "mother-f***er",
         "variants": ["madarchod", "maderchod", "mdrchod", "mc", "madrchod",
                       "motherchod", "madarchd", "mdrchd", "maadarchod"],
     },
-    "\u092c\u094b\u0938\u0921\u093c\u0940\u0915\u0947": {
+    "बोसड़ीके": {
         "meaning": "born of a prostitute",
         "variants": ["bosdike", "bsdk", "bsdke", "bosdk", "bosdke",
                       "bosdiwale", "bsdwale", "bosadike", "bhosdike",
                       "bhosdiwale", "bhsdk", "bhosdke"],
     },
-    "\u0917\u093e\u0902\u0921\u0942": {
+    "गांडू": {
         "meaning": "a**hole (person)",
-        "variants": ["gandu", "gaandu", "gndu", "ganduu", "gaand", "gand"],
+        "variants": ["gandu", "gaandu", "gndu", "gaandu", "ganduu",
+                      "gandu", "gaand", "gand"],
     },
-    "\u0938\u093e\u0932\u093e": {
+    "साला": {
         "meaning": "brother-in-law (used as insult)",
         "variants": ["saala", "sala", "saale", "sale", "saaley",
                       "saali", "sali", "saaliyan"],
     },
-    "\u0915\u092e\u0940\u0928\u093e": {
+    "कमीना": {
         "meaning": "scoundrel",
         "variants": ["kamina", "kameena", "kmina", "kameene", "kamine",
                       "kamini", "kameeni", "kamino", "kmeena"],
     },
-    "\u0939\u0930\u093e\u092e\u0940": {
+    "हरामी": {
         "meaning": "illegitimate/scoundrel",
         "variants": ["harami", "hrami", "haraami", "haraamee",
                       "haramkhor", "hmkhor", "haraamkhor", "hramkhor"],
     },
-    "\u0917\u0927\u093e": {
+    "गधा": {
         "meaning": "donkey (calling someone stupid)",
         "variants": ["gadha", "gdha", "gadhe", "gdhe", "gadhaa",
                       "gadho", "gadhon"],
     },
-    "\u0909\u0932\u094d\u0932\u0942": {
+    "उल्लू": {
         "meaning": "owl (calling someone idiot)",
         "variants": ["ullu", "ulloo", "ulu", "ulluu",
                       "ullu ka pattha", "ullu ke patthe"],
     },
-    "\u092c\u0947\u0935\u0915\u0942\u092b": {
+    "बेवकूफ": {
         "meaning": "fool/idiot",
         "variants": ["bewakoof", "bevkoof", "bevkuf", "bwkoof",
                       "bewkoof", "bewaqoof", "bevakuf", "bvkoof",
                       "bewkuf", "bevkf"],
     },
-    "\u092a\u093e\u0917\u0932": {
+    "पागल": {
         "meaning": "crazy/insane",
         "variants": ["pagal", "pagl", "pgl", "pagla", "paglu",
                       "paagal", "pagalon", "pgal", "paagl"],
     },
-    "\u0932\u094b\u0921\u0942": {
+    "लोडू": {
         "meaning": "idiot (vulgar)",
-        "variants": ["lodu", "loduu", "laude",
+        "variants": ["lodu", "lodu", "loduu", "lodu", "laude",
                       "lavde", "lvde", "laudu", "lwde"],
     },
-    "\u092c\u0915\u0932\u094b\u0932": {
+    "बकलोल": {
         "meaning": "idiot/fool",
         "variants": ["baklol", "bkl", "bakl", "baklund", "bklol",
                       "baklole", "bklnd"],
     },
-    "\u0915\u0941\u0924\u094d\u0924\u093e": {
+    "कुत्ता": {
         "meaning": "dog (calling someone a dog)",
         "variants": ["kutta", "kuta", "kutte", "kute", "kuttey",
                       "kutiya", "kutia", "kuttia"],
     },
-    "\u0938\u0942\u0905\u0930": {
+    "सूअर": {
         "meaning": "pig (insult)",
         "variants": ["suar", "suwar", "sooar", "soor", "suwwar",
                       "suwar ki aulad"],
     },
-    "\u091f\u091f\u094d\u091f\u0940": {
+    "टट्टी": {
         "meaning": "crap/garbage",
-        "variants": ["tatti", "tati", "ttti", "tattii", "tty", "tatty"],
+        "variants": ["tatti", "tati", "ttti", "tattii",
+                      "tty", "tatty"],
     },
-    "\u0918\u091f\u093f\u092f\u093e": {
+    "घटिया": {
         "meaning": "cheap/terrible",
         "variants": ["ghatiya", "ghtiya", "ghatya", "ghateya",
                       "ghatiyaa", "ghatiyo"],
     },
-    "\u092c\u0915\u0935\u093e\u0938": {
+    "बकवास": {
         "meaning": "nonsense/rubbish",
         "variants": ["bakwas", "bakwaas", "bkwas", "bkwaas",
                       "bakvas", "bkvas", "bakwass"],
     },
-    "\u0928\u093e\u0932\u093e\u092f\u0915": {
+    "नालायक": {
         "meaning": "worthless/useless",
         "variants": ["nalayak", "nalayq", "nalayk", "nalayik",
                       "nalaayak", "nlayak", "nlyak"],
     },
-    "\u092d\u0921\u093c\u0935\u093e": {
+    "भड़वा": {
         "meaning": "pimp (insult)",
         "variants": ["bhadwa", "bhadva", "bhdwa", "bhadwe",
                       "bhadwo", "bhdva"],
     },
-    "\u0930\u0902\u0921\u0940": {
+    "रंडी": {
         "meaning": "prostitute (slur)",
         "variants": ["randi", "rndi", "randee", "rndee",
                       "randiya", "randiyan", "rndiyan"],
     },
-    "\u091a\u092e\u093e\u0930": {
+    "चमार": {
         "meaning": "casteist slur",
         "variants": ["chamar", "chamaar", "chmaar", "chmar",
                       "chamaaron", "chamaro"],
     },
-    "\u092d\u093f\u0916\u093e\u0930\u0940": {
+    "भिखारी": {
         "meaning": "beggar (insult)",
         "variants": ["bhikhari", "bhikari", "bhkhari", "bhikhaari",
                       "bhikaari", "bhkhri", "bhikharion"],
     },
 }
 
+# Also match derived forms that the corrector produces
 _ABUSIVE_DERIVED = {
-    "\u0917\u093e\u0902\u0921", "\u091a\u0942\u0924\u093f\u092f\u093e\u092a\u093e",
-    "\u0915\u0941\u0924\u094d\u0924\u0947", "\u0915\u0941\u0924\u093f\u092f\u093e",
-    "\u0932\u094c\u0921\u093c\u0947",
-    "\u0915\u092e\u0940\u0928\u0947", "\u0915\u092e\u0940\u0928\u0940",
-    "\u0917\u0927\u0947", "\u092d\u0921\u093c\u0935\u0947",
-    "\u0938\u093e\u0932\u0947", "\u0938\u093e\u0932\u0940",
-    "\u0939\u0930\u093e\u092e\u0916\u094b\u0930",
+    "गांड", "चूतियापा", "कुत्ते", "कुतिया", "लौड़े",
+    "कमीने", "कमीनी", "गधे", "भड़वे", "साले", "साली",
+    "हरामखोर",
 }
 
+# Build flat sets for fast lookup
 _ABUSIVE_DEVANAGARI = set(ABUSIVE_WORDS.keys()) | _ABUSIVE_DERIVED
 
+# Realistic exact-match blocklist: only the most obvious canonical spellings
+# This is what a human would typically put in a blocklist
 _ABUSIVE_EXACT = {
     "chutiya", "behenchod", "madarchod", "bosdike", "gandu",
     "saala", "saali", "kamina", "harami", "gadha", "ullu",
@@ -338,6 +345,43 @@ _ABUSIVE_EXACT = {
     "tatti", "ghatiya", "bakwas", "nalayak", "bhadwa", "randi",
     "chamar", "bhikhari",
 }
+# Total: ~25 entries - a typical hand-built blocklist
+
+
+@app.route("/api/diff", methods=["POST"])
+def api_diff():
+    """Show word-by-word diff of what dhvani changes."""
+    text = request.json.get("text", "").strip()
+    if not text:
+        return jsonify({"error": "empty"}), 400
+
+    words = text.split()
+    langs = dhvani.identify_languages(text)
+    result_words = []
+    changed_count = 0
+
+    for word, (_, lang) in zip(words, langs):
+        dev = dhvani.to_devanagari(word)
+        ipa = dhvani.to_ipa(word)
+        is_changed = (lang in ("hi", "hi_dev")) and dev != word
+        if is_changed:
+            changed_count += 1
+        result_words.append({
+            "original": word,
+            "devanagari": dev,
+            "ipa": ipa,
+            "lang": lang,
+            "changed": is_changed,
+        })
+
+    return jsonify({
+        "input": text,
+        "words": result_words,
+        "total": len(words),
+        "changed": changed_count,
+        "full_devanagari": dhvani.to_devanagari(text),
+        "full_ipa": dhvani.to_ipa(text),
+    })
 
 
 @app.route("/api/moderate", methods=["POST"])
@@ -349,8 +393,10 @@ def api_moderate():
     clean = re.sub(r'[^\w\s]', ' ', text.lower())
     words = clean.split()
 
+    # Exact-match detection
     exact_flagged = [w for w in words if w in _ABUSIVE_EXACT]
 
+    # dhvani-normalized detection
     dev_text = dhvani.to_devanagari(clean)
     dev_words = dev_text.split()
     dhvani_flagged = []
@@ -371,13 +417,14 @@ def api_moderate():
 
 @app.route("/api/moderation_stats")
 def api_moderation_stats():
+    """Show how many variants each abusive word has."""
     stats = []
     for dev, info in ABUSIVE_WORDS.items():
         stats.append({
             "devanagari": dev,
             "meaning": info["meaning"],
             "variant_count": len(info["variants"]),
-            "variants": info["variants"][:8],
+            "variants": info["variants"][:8],  # show first 8
         })
     return jsonify({
         "words": stats,
@@ -390,6 +437,7 @@ def api_moderation_stats():
 
 @app.route("/api/explore", methods=["POST"])
 def api_explore():
+    """Given a word, show its canonical form and all known variants."""
     word = request.json.get("word", "").strip()
     if not word:
         return jsonify({"error": "empty"}), 400
@@ -398,12 +446,15 @@ def api_explore():
     ipa = dhvani.to_ipa(word)
 
     from dhvani.corrector import get_variants_for_devanagari
+    # Get all known romanized variants for this Devanagari form
     variants = get_variants_for_devanagari(dev)
+    # Also check each word in multi-word outputs
     dev_words = dev.split()
     if len(dev_words) > 1:
         for dw in dev_words:
             variants.extend(get_variants_for_devanagari(dw))
 
+    # Deduplicate and remove the input word itself
     variants = sorted(set(v for v in variants if v.lower() != word.lower()))
 
     return jsonify({
