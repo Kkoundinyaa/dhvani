@@ -140,36 +140,6 @@ dhvani same "bahut" "bohot"
 
 ---
 
-## Content moderation
-
-This is where dhvani is most useful. People evade blocklists by misspelling abusive words, dropping vowels, or abbreviating ("bsdk", "chtiya", "bhnchod"). An exact match blocklist with 25 canonical spellings catches exactly those 25. dhvani normalizes all the creative misspellings to canonical Devanagari first, so a single Devanagari entry catches every variant.
-
-```python
-import dhvani
-
-# Exact match catches: 0 (none of these are in a typical blocklist)
-# dhvani catches: both
-text = "bsdk kya kr rha hai chtiya"
-normalized = dhvani.to_devanagari(text)
-# -> "बोसड़ीके क्या कर रहा है चूतिया"
-# Check normalized text against a Devanagari blocklist
-```
-
-One abusive word, many evasions:
-
-| Evasion | Exact match | dhvani |
-|---------|-------------|--------|
-| chutiya | Caught | Caught |
-| chtiya | Missed | Caught |
-| chtyia | Missed | Caught |
-| chutya | Missed | Caught |
-| chootiya | Missed | Caught |
-| chutiyo | Missed | Caught |
-
-The [live demo](https://krishnabadikela-dhvani.hf.space) has a Moderate tab where you can test this yourself. It tracks 24 abusive words with 192+ known spelling variants.
-
----
-
 ## How it works
 
 All variant spellings of a Hindi word produce the same sound. dhvani routes through IPA (International Phonetic Alphabet) to collapse them:
@@ -205,15 +175,11 @@ Before lookup, input goes through:
 
 ## Use cases
 
-Content moderation: a 25-word Devanagari blocklist with dhvani preprocessing catches 192+ romanized variants that exact match misses.
-
 Search: index Hinglish content once, find it regardless of spelling. Searching "accha" also finds "achha", "acha", "achaa".
 
-Sentiment analysis: spelling variants of sentiment words ("bakwas", "bakwaas", "bakwass") all resolve to the same form before the classifier sees them.
+Tokenization: 40% word-level vocabulary reduction and 15-17% fewer BPE/WordPiece tokens when normalizing before tokenization (measured on SentiMix, 545K texts).
 
-LLM preprocessing: 11.9% vocabulary reduction measured on SentiMix (57K to 50K tokens) when normalizing before BPE tokenization.
-
-Chatbot input normalization: normalize incoming WhatsApp/chat messages before intent detection.
+Preprocessing for models: normalize messy Hinglish input before feeding to classifiers, chatbots, or LLMs. Spelling variants of the same word resolve to one canonical form.
 
 ---
 
@@ -221,7 +187,7 @@ Chatbot input normalization: normalize incoming WhatsApp/chat messages before in
 
 [krishnabadikela-dhvani.hf.space](https://krishnabadikela-dhvani.hf.space)
 
-Six tabs: Normalize (live typing with Devanagari + IPA + language detection), Same Word? (compare two spellings), Moderate (exact match vs dhvani side by side), Explorer (type a word, see all known variants), Search (phonetic search over 3,033 real Hindi tweets), Sentiment (with/without normalization comparison).
+Three tabs: Normalize (live typing with word-by-word diff, Devanagari, IPA, and language detection), Explorer (type a word, see all known spelling variants), Search (phonetic search over 3,033 real Hindi tweets).
 
 ---
 
