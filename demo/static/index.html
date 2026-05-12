@@ -28,7 +28,6 @@ tailwind.config = {
   .fade-in { animation: fadeIn 0.3s ease-out; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
   .glow-border { box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.3), 0 4px 24px rgba(99, 102, 241, 0.08); }
-  .glow-red { box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3), 0 4px 24px rgba(239, 68, 68, 0.08); }
   .card-hover { transition: all 0.2s ease; }
   .card-hover:hover { transform: translateY(-1px); box-shadow: 0 8px 30px rgba(0,0,0,0.06); }
   input:focus, textarea:focus { outline: none; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.4); }
@@ -36,8 +35,6 @@ tailwind.config = {
   .hero-bg { background: linear-gradient(135deg, #f8fafc 0%, #eef2ff 50%, #faf5ff 100%); }
   .pulse-dot { animation: pulse 2s infinite; }
   @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-  .flagged-word { background: linear-gradient(to bottom, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05)); border-bottom: 2px solid #ef4444; padding: 1px 2px; border-radius: 2px; }
-  .safe-word { padding: 1px 2px; }
 </style>
 </head>
 <body class="bg-slate-50 min-h-screen">
@@ -74,8 +71,6 @@ tailwind.config = {
   <div class="max-w-6xl mx-auto px-6">
     <nav class="flex gap-1" id="tabs">
       <button onclick="switchTab('normalize')" data-tab="normalize" class="tab-active px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Normalize</button>
-      <button onclick="switchTab('compare')" data-tab="compare" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Same Word?</button>
-      <button onclick="switchTab('moderate')" data-tab="moderate" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Diff</button>
       <button onclick="switchTab('explorer')" data-tab="explorer" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Explorer</button>
       <button onclick="switchTab('search')" data-tab="search" class="tab-inactive px-5 py-3.5 text-sm font-semibold tracking-wide transition-all">Search</button>
     </nav>
@@ -88,7 +83,7 @@ tailwind.config = {
   <!-- ==================== NORMALIZE ==================== -->
   <div id="panel-normalize" class="tab-panel">
     <p class="text-slate-500 text-sm mb-5">
-      Type messy Hinglish. Get clean Devanagari, IPA transcription, and per-word language detection. Handles elongated text, abbreviations, slang, and mixed scripts.
+      Type messy Hinglish. See the word-by-word normalization, full Devanagari output, IPA, and language detection. Handles elongated text, abbreviations, slang, and mixed scripts.
     </p>
 
     <div class="relative">
@@ -104,90 +99,10 @@ tailwind.config = {
       <div class="flex flex-wrap gap-2">
         <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bohotttt achaaa movie thi yaar, maza aa gaya</button>
         <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">kya karra h tu aajkal, sab theek?</button>
-        <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bhai sahb kya kmaal ki acting ki hai</button>
-        <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">arre waah shndaar century by kohli</button>
+        <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bht bkwas flm thi yr, faltuuu</button>
+        <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">shndaar performance dhmakedar match tha</button>
         <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">paneer masala aur dal chawal dena bhai</button>
-        <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">chal bey nikal yahan se, faltuuu log</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== COMPARE ==================== -->
-  <div id="panel-compare" class="tab-panel hidden">
-    <p class="text-slate-500 text-sm mb-5">
-      Do two different spellings refer to the same Hindi word? Type any pair and find out. Uses IPA as a phonetic bridge.
-    </p>
-
-    <div class="grid grid-cols-2 gap-4 mb-4">
-      <div>
-        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Word 1</label>
-        <input id="cmp-a" type="text" placeholder="e.g. bahut"
-          class="w-full px-4 py-3 text-base rounded-xl border border-slate-200 bg-white focus:border-indigo-400 transition-all"
-          onkeydown="if(event.key==='Enter')doCompare()">
-      </div>
-      <div>
-        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Word 2</label>
-        <input id="cmp-b" type="text" placeholder="e.g. bohot"
-          class="w-full px-4 py-3 text-base rounded-xl border border-slate-200 bg-white focus:border-indigo-400 transition-all"
-          onkeydown="if(event.key==='Enter')doCompare()">
-      </div>
-    </div>
-    <button onclick="doCompare()" class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200">
-      Compare
-    </button>
-
-    <div id="cmp-output" class="mt-4"></div>
-
-    <div class="mt-6">
-      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">Try these pairs</p>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        <button onclick="tryCompare('bahut','bohot')" class="flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">
-          <span>bahut</span><span class="text-slate-300">&harr;</span><span>bohot</span>
-        </button>
-        <button onclick="tryCompare('accha','achha')" class="flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">
-          <span>accha</span><span class="text-slate-300">&harr;</span><span>achha</span>
-        </button>
-        <button onclick="tryCompare('kaise','kese')" class="flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">
-          <span>kaise</span><span class="text-slate-300">&harr;</span><span>kese</span>
-        </button>
-        <button onclick="tryCompare('shaandar','shandar')" class="flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">
-          <span>shaandar</span><span class="text-slate-300">&harr;</span><span>shandar</span>
-        </button>
-        <button onclick="tryCompare('bakwas','bkwaas')" class="flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">
-          <span>bakwas</span><span class="text-slate-300">&harr;</span><span>bkwaas</span>
-        </button>
-        <button onclick="tryCompare('hello','namaste')" class="flex items-center justify-center gap-2 px-3 py-2 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">
-          <span>hello</span><span class="text-slate-300">&harr;</span><span>namaste</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ==================== DIFF ==================== -->
-  <div id="panel-moderate" class="tab-panel hidden">
-    <p class="text-slate-500 text-sm mb-5">
-      See exactly what dhvani changes, word by word. Type messy Hinglish and see each word mapped to its canonical Devanagari form. Words that changed are highlighted.
-    </p>
-
-    <div class="relative mb-4">
-      <textarea id="mod-input" rows="2" placeholder="Type messy Hinglish: bohotttt achaaa kya karra h tu bhai"
-        class="w-full px-4 py-3 text-base rounded-xl border border-slate-200 bg-white resize-none focus:border-indigo-400 transition-all"
-        onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();doDiff()}"></textarea>
-    </div>
-    <button onclick="doDiff()" class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200">
-      Show diff
-    </button>
-
-    <div id="mod-output" class="mt-4"></div>
-
-    <div class="mt-5">
-      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2.5">Try these</p>
-      <div class="flex flex-wrap gap-2">
-        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bohotttt achaaa movie thi yaaaar</button>
-        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">kya karra h tu aajkal bhai</button>
-        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bht bkwas flm thi yr</button>
-        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">shndaar performance dhmakedar match tha</button>
-        <button onclick="tryDiff(this)" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">the movie was really good honestly</button>
+        <button onclick="tryNormalize(this)" class="example-btn px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">the movie was really good honestly</button>
       </div>
     </div>
   </div>
@@ -195,11 +110,11 @@ tailwind.config = {
   <!-- ==================== EXPLORER ==================== -->
   <div id="panel-explorer" class="tab-panel hidden">
     <p class="text-slate-500 text-sm mb-5">
-      Type any Hindi word (Romanized or Devanagari) and see its canonical Devanagari form, IPA, and <span class="font-semibold text-slate-700">all known spelling variants</span> that map to the same word.
+      Type any Hindi word (Romanized or Devanagari) and see its canonical Devanagari form, IPA, and all known spelling variants that map to the same word.
     </p>
 
     <div class="flex gap-3 mb-4">
-      <input id="explore-input" type="text" placeholder="Type a word: bahut, accha, bsdk, pagal..."
+      <input id="explore-input" type="text" placeholder="Type a word: bahut, accha, pagal, jabardast..."
         class="flex-1 px-4 py-3 text-base rounded-xl border border-slate-200 bg-white focus:border-indigo-400 transition-all"
         onkeydown="if(event.key==='Enter')doExplore()">
       <button onclick="doExplore()" class="px-6 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-700 transition-all shadow-sm shadow-indigo-200">
@@ -216,10 +131,10 @@ tailwind.config = {
         <button onclick="tryExplore('accha')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">accha</button>
         <button onclick="tryExplore('kaise')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">kaise</button>
         <button onclick="tryExplore('pagal')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">pagal</button>
-        <button onclick="tryExplore('chutiya')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">chutiya</button>
         <button onclick="tryExplore('jabardast')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">jabardast</button>
         <button onclick="tryExplore('wala')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">wala</button>
         <button onclick="tryExplore('khana')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">khana</button>
+        <button onclick="tryExplore('bewakoof')" class="px-3 py-1.5 text-sm rounded-lg bg-white border border-slate-200 text-slate-600 card-hover cursor-pointer hover:border-indigo-300 hover:text-indigo-600">bewakoof</button>
       </div>
     </div>
   </div>
@@ -298,7 +213,7 @@ function codeBlock(code) {
   </div>`;
 }
 
-// ===== Normalize =====
+// ===== Normalize (merged with diff) =====
 let normTimer = null;
 function debounceNormalize() {
   clearTimeout(normTimer);
@@ -309,81 +224,70 @@ function doNormalize() {
   const text = document.getElementById('norm-input').value.trim();
   if (!text) { document.getElementById('norm-output').innerHTML = ''; return; }
 
-  fetch('/api/normalize', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) })
-    .then(r => r.json()).then(d => {
-      const langChips = d.languages.map(l => {
-        const isHi = l.lang === 'hi' || l.lang === 'hi_dev';
-        const cls = isHi ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-slate-50 text-slate-500 border-slate-200';
-        return `<span class="inline-block px-2 py-0.5 text-xs font-medium rounded border ${cls}">${escapeHtml(l.word)}</span>`;
-      }).join(' ');
-
-      document.getElementById('norm-output').innerHTML = `
-        <div class="bg-white rounded-2xl border border-slate-200 p-6 fade-in glow-border">
-          <div class="mb-4">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">Devanagari</p>
-            <p class="text-xl font-devanagari font-semibold text-slate-800 leading-relaxed">${escapeHtml(d.devanagari)}</p>
-          </div>
-          <div class="mb-4">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">IPA Transcription</p>
-            <p class="text-lg font-mono text-indigo-500 leading-relaxed">/${escapeHtml(d.ipa)}/</p>
-          </div>
-          <div>
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1.5">Language Detection</p>
-            <div class="flex flex-wrap gap-1.5">${langChips}</div>
-          </div>
-          ${codeBlock(`import dhvani\ndhvani.to_devanagari("${text}")\ndhvani.to_ipa("${text}")`)}
+  // Fetch both normalize and diff in parallel
+  Promise.all([
+    fetch('/api/normalize', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) }).then(r => r.json()),
+    fetch('/api/diff', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) }).then(r => r.json()),
+  ]).then(([norm, diff]) => {
+    // Word-by-word diff cards
+    const wordCards = diff.words.map(w => {
+      if (!w.changed) {
+        return `<div class="inline-flex flex-col items-center px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-100">
+          <span class="text-sm text-slate-500">${escapeHtml(w.original)}</span>
+          <span class="text-[10px] text-slate-300 mt-0.5">${w.lang === 'en' ? 'en' : 'unchanged'}</span>
         </div>`;
-    });
+      }
+      return `<div class="inline-flex flex-col items-center px-2.5 py-2 rounded-lg bg-indigo-50 border border-indigo-200">
+        <span class="text-sm text-slate-400 line-through">${escapeHtml(w.original)}</span>
+        <span class="text-base font-devanagari font-semibold text-indigo-700">${escapeHtml(w.devanagari)}</span>
+        <span class="text-[10px] font-mono text-indigo-400">/${escapeHtml(w.ipa)}/</span>
+      </div>`;
+    }).join('');
+
+    // Language chips
+    const langChips = norm.languages.map(l => {
+      const isHi = l.lang === 'hi' || l.lang === 'hi_dev';
+      const cls = isHi ? 'bg-indigo-50 text-indigo-600 border-indigo-200' : 'bg-slate-50 text-slate-500 border-slate-200';
+      return `<span class="inline-block px-2 py-0.5 text-xs font-medium rounded border ${cls}">${escapeHtml(l.word)}</span>`;
+    }).join(' ');
+
+    document.getElementById('norm-output').innerHTML = `
+      <div class="fade-in space-y-4">
+        <!-- Word-by-word diff -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 glow-border">
+          <div class="flex items-center gap-3 mb-3">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300">Word-by-word</p>
+            <span class="text-xs text-slate-400">${diff.total} words, <span class="font-semibold ${diff.changed > 0 ? 'text-indigo-600' : ''}">${diff.changed} normalized</span></span>
+          </div>
+          <div class="flex flex-wrap gap-2">${wordCards}</div>
+        </div>
+
+        <!-- Full output -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">Devanagari</p>
+            <p class="text-xl font-devanagari font-semibold text-slate-800 leading-relaxed">${escapeHtml(norm.devanagari)}</p>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 p-5">
+            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">IPA</p>
+            <p class="text-lg font-mono text-indigo-500 leading-relaxed">/${escapeHtml(norm.ipa)}/</p>
+          </div>
+        </div>
+
+        <!-- Language detection -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5">
+          <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1.5">Language detection</p>
+          <div class="flex flex-wrap gap-1.5">${langChips}</div>
+        </div>
+
+        ${codeBlock(`import dhvani\ndhvani.to_devanagari("${text}")\n# "${norm.devanagari}"`)}
+      </div>`;
+  });
 }
 
 function tryNormalize(btn) {
   document.getElementById('norm-input').value = btn.textContent;
   doNormalize();
-}
-
-// ===== Compare =====
-function doCompare() {
-  const a = document.getElementById('cmp-a').value.trim();
-  const b = document.getElementById('cmp-b').value.trim();
-  if (!a || !b) { document.getElementById('cmp-output').innerHTML = '<p class="text-sm text-slate-400 text-center py-6">Enter two words to compare.</p>'; return; }
-
-  fetch('/api/compare', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({word_a: a, word_b: b}) })
-    .then(r => r.json()).then(d => {
-      const match = d.match;
-      const borderCls = match ? 'border-emerald-300 bg-emerald-50/50' : 'border-red-300 bg-red-50/50';
-      const iconCls = match ? 'text-emerald-500' : 'text-red-500';
-      const icon = match ? '=' : '\u2260';
-      const label = match ? 'Same word' : 'Different words';
-      const pct = Math.round(d.similarity * 100);
-
-      document.getElementById('cmp-output').innerHTML = `
-        <div class="rounded-2xl border-2 ${borderCls} p-6 fade-in">
-          <div class="flex items-center gap-3 mb-5">
-            <span class="text-3xl font-black ${iconCls}">${icon}</span>
-            <span class="text-lg font-bold text-slate-800">${label}</span>
-            <span class="ml-auto font-mono text-sm text-slate-400">${pct}% similarity</span>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-              <p class="text-lg font-semibold text-slate-800">${escapeHtml(d.word_a)}</p>
-              <p class="font-mono text-sm text-indigo-500 mt-1">/${escapeHtml(d.ipa_a)}/</p>
-              <p class="font-devanagari text-sm text-slate-400 mt-0.5">${escapeHtml(d.dev_a)}</p>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-              <p class="text-lg font-semibold text-slate-800">${escapeHtml(d.word_b)}</p>
-              <p class="font-mono text-sm text-indigo-500 mt-1">/${escapeHtml(d.ipa_b)}/</p>
-              <p class="font-devanagari text-sm text-slate-400 mt-0.5">${escapeHtml(d.dev_b)}</p>
-            </div>
-          </div>
-          ${codeBlock(`import dhvani\ndhvani.are_same("${a}", "${b}")  # ${match}`)}
-        </div>`;
-    });
-}
-
-function tryCompare(a, b) {
-  document.getElementById('cmp-a').value = a;
-  document.getElementById('cmp-b').value = b;
-  doCompare();
 }
 
 // ===== Search =====
@@ -458,69 +362,6 @@ function doSearch() {
 function trySearch(q) {
   document.getElementById('search-input').value = q;
   doSearch();
-}
-
-// ===== Diff =====
-function doDiff() {
-  const text = document.getElementById('mod-input').value.trim();
-  if (!text) return;
-
-  fetch('/api/diff', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({text}) })
-    .then(r => r.json()).then(d => {
-      // Word-by-word diff cards
-      const wordCards = d.words.map(w => {
-        if (!w.changed) {
-          // Unchanged word (English or already canonical)
-          return `<div class="inline-flex flex-col items-center px-2.5 py-2 rounded-lg bg-slate-50 border border-slate-100">
-            <span class="text-sm text-slate-500">${escapeHtml(w.original)}</span>
-            <span class="text-[10px] text-slate-300 mt-0.5">${w.lang === 'en' ? 'en' : 'unchanged'}</span>
-          </div>`;
-        }
-        // Changed word
-        return `<div class="inline-flex flex-col items-center px-2.5 py-2 rounded-lg bg-indigo-50 border border-indigo-200">
-          <span class="text-sm text-slate-400 line-through">${escapeHtml(w.original)}</span>
-          <span class="text-base font-devanagari font-semibold text-indigo-700">${escapeHtml(w.devanagari)}</span>
-          <span class="text-[10px] font-mono text-indigo-400">/${escapeHtml(w.ipa)}/</span>
-        </div>`;
-      }).join('');
-
-      document.getElementById('mod-output').innerHTML = `
-        <div class="fade-in">
-          <!-- Stats -->
-          <div class="flex items-center gap-3 mb-4">
-            <span class="text-sm text-slate-500">${d.total} words</span>
-            <span class="text-slate-300">&middot;</span>
-            <span class="text-sm font-semibold ${d.changed > 0 ? 'text-indigo-600' : 'text-slate-400'}">${d.changed} normalized</span>
-            <span class="text-slate-300">&middot;</span>
-            <span class="text-sm text-slate-400">${d.total - d.changed} unchanged</span>
-          </div>
-
-          <!-- Word diff grid -->
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 glow-border">
-            <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-3">Word-by-word</p>
-            <div class="flex flex-wrap gap-2">${wordCards}</div>
-          </div>
-
-          <!-- Full output -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">Devanagari</p>
-              <p class="text-base font-devanagari text-slate-700 leading-relaxed">${escapeHtml(d.full_devanagari)}</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-200 p-5">
-              <p class="text-[10px] font-bold uppercase tracking-widest text-slate-300 mb-1">IPA</p>
-              <p class="text-base font-mono text-indigo-500 leading-relaxed">/${escapeHtml(d.full_ipa)}/</p>
-            </div>
-          </div>
-
-          ${codeBlock(`import dhvani\ndhvani.to_devanagari("${text}")\n# "${d.full_devanagari}"`)}
-        </div>`;
-    });
-}
-
-function tryDiff(btn) {
-  document.getElementById('mod-input').value = btn.textContent;
-  doDiff();
 }
 
 // ===== Word Explorer =====
